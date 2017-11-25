@@ -282,7 +282,7 @@ Trie.prototype.findPath = function (targetKey, cb) {
         var branchIndex = keyRemainder[0]
         //console.log('branchIndex:', branchIndex)
         var branchNode = node.getValue(branchIndex)
-        //console.log('node.getValue returned branchNode:', branchNode)
+        console.log('node.getValue returned branchNode:', branchNode)
         if (!branchNode) {
           // there are no more nodes to find and we didn't find the key
           console.log('no more nodes to find..')
@@ -393,7 +393,29 @@ Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
 
   // add the new nodes
   key = TrieNode.stringToNibbles(key)
-  if (lastNode.type === 'branch') {
+
+  // Check if the last node is a leaf and the key matches to this
+  var matchLeaf = false
+  if (lastNode.type === 'leaf') {
+    var l = 0
+    for (var i = 0; i < stack.length; i++) {
+      var n = stack[i]
+      if (n.type === 'branch') {
+        l++
+      } else {
+        l += n.key.length
+      }
+    }
+    if ((matchingNibbleLength(lastNode.key, key.slice(l)) === lastNode.key.length) && (keyRemainder.length === 0)) {
+      matchLeaf = true
+    }
+  }
+
+  if (matchLeaf) {
+    // just updating a found value
+    lastNode.value = value
+    stack.push(lastNode)
+  } else if (lastNode.type === 'branch') {
     stack.push(lastNode)
     if (keyRemainder !== 0) {
       // add an extention to a branch node
@@ -404,10 +426,6 @@ Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
     } else {
       lastNode.value = value
     }
-  } else if (lastNode.type === 'leaf' && keyRemainder.length === 0) {
-    // just updating a found value
-    lastNode.value = value
-    stack.push(lastNode)
   } else {
     // create a branch node
     var lastKey = lastNode.key
