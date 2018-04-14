@@ -108,10 +108,13 @@ TrieNode.prototype.getKey = function () {
 }
 
 TrieNode.prototype.serialize = function () {
+  console.log('TrieNode.serialize this.raw:', this.raw)
+  console.log('TrieNode.serialize this.raw rlp encoded:', rlp.encode(this.raw).toString('hex'))
   return rlp.encode(this.raw)
 }
 
 TrieNode.prototype.hash = function () {
+  console.log('TrieNode.hash. calculating hash:', ethUtil.sha3(this.serialize()).toString('hex'))
   return ethUtil.sha3(this.serialize())
 }
 

@@ -724,7 +724,7 @@ Trie.prototype._formatNode = function (node, topLevel, remove, opStack) {
   console.log('rlpNode:', rlpNode.toString('hex'))
   if (rlpNode.length >= 32 || topLevel) {
     var hashRoot = node.hash()
-    console.log('hashRoot:', hashRoot)
+    console.log('hashRoot:', ethUtil.toBuffer(hashRoot).toString('hex'))
 
     if (remove && this.isCheckpoint) {
       opStack.push({
