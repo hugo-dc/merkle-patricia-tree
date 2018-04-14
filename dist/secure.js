@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Trie = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SecureTrie = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 const assert = require('assert')
 const levelup = require('levelup')
 const memdown = require('memdown')
@@ -801,7 +801,7 @@ Trie.prototype.checkRoot = function (root, cb) {
   })
 }
 
-},{"./readStream":162,"./trieNode":163,"./util":164,"assert":10,"async":11,"ethereumjs-util":44,"levelup":98,"memdown":103,"rlp":135,"semaphore":143}],2:[function(require,module,exports){
+},{"./readStream":162,"./trieNode":165,"./util":166,"assert":10,"async":11,"ethereumjs-util":44,"levelup":98,"memdown":103,"rlp":135,"semaphore":143}],2:[function(require,module,exports){
 const levelup = require('levelup')
 const memdown = require('memdown')
 const async = require('async')
@@ -988,7 +988,7 @@ ScratchReadStream.prototype._read = function () {
   }
 }
 
-},{"./util":164,"async":11,"level-ws":90,"levelup":98,"memdown":103,"readable-stream":131,"util":158}],3:[function(require,module,exports){
+},{"./util":166,"async":11,"level-ws":90,"levelup":98,"memdown":103,"readable-stream":131,"util":158}],3:[function(require,module,exports){
 const BaseTrie = require('./baseTrie')
 const checkpointInterface = require('./checkpoint-interface')
 const inherits = require('util').inherits
@@ -29589,7 +29589,7 @@ exports.verifyProof = function (rootHash, key, proof, cb) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./trieNode":163,"./util":164,"buffer":17,"ethereumjs-util":44}],162:[function(require,module,exports){
+},{"./trieNode":165,"./util":166,"buffer":17,"ethereumjs-util":44}],162:[function(require,module,exports){
 const Readable = require('readable-stream').Readable
 const TrieNode = require('./trieNode')
 const util = require('util')
@@ -29623,7 +29623,66 @@ TrieReadStream.prototype._read = function () {
   }
 }
 
-},{"./trieNode":163,"readable-stream":131,"util":158}],163:[function(require,module,exports){
+},{"./trieNode":165,"readable-stream":131,"util":158}],163:[function(require,module,exports){
+const ethUtil = require('ethereumjs-util')
+
+module.exports = secureInterface
+
+function secureInterface (trie) {
+  // overwrites
+  trie.copy = copy.bind(trie, trie.copy.bind(trie))
+  trie.get = get.bind(trie, trie.get.bind(trie))
+  trie.put = put.bind(trie, trie.put.bind(trie))
+  trie.del = del.bind(trie, trie.del.bind(trie))
+}
+
+// adds the interface when copying the trie
+function copy (_super) {
+  var trie = _super()
+  secureInterface(trie)
+  return trie
+}
+
+function get (_super, key, cb) {
+  var hash = ethUtil.sha3(key)
+  _super(hash, cb)
+}
+
+// for a falsey value, use the original key
+// to avoid double hashing the key
+function put (_super, key, val, cb) {
+  if (!val) {
+    this.del(key, cb)
+  } else {
+    var hash = ethUtil.sha3(key)
+    _super(hash, val, cb)
+  }
+}
+
+function del (_super, key, cb) {
+  var hash = ethUtil.sha3(key)
+  _super(hash, cb)
+}
+
+},{"ethereumjs-util":44}],164:[function(require,module,exports){
+const CheckpointTrie = require('./index')
+const secureInterface = require('./secure-interface')
+const inherits = require('util').inherits
+
+module.exports = SecureTrie
+inherits(SecureTrie, CheckpointTrie)
+
+/**
+ * You can create a secure Trie where the keys are automatically hashed using **SHA3** by using `require('merkle-patricia-tree/secure')`. It has the same methods and constuctor as `Trie`
+ * @class SecureTrie
+ * @extends Trie
+ */
+function SecureTrie () {
+  CheckpointTrie.apply(this, arguments)
+  secureInterface(this)
+}
+
+},{"./index":3,"./secure-interface":163,"util":158}],165:[function(require,module,exports){
 (function (Buffer){
 const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
@@ -29885,7 +29944,7 @@ function isRawNode (node) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":17,"ethereumjs-util":44,"rlp":135}],164:[function(require,module,exports){
+},{"buffer":17,"ethereumjs-util":44,"rlp":135}],166:[function(require,module,exports){
 (function (process){
 const async = require('async')
 
@@ -29967,5 +30026,5 @@ function asyncFirstSeries (array, iterator, cb) {
 }
 
 }).call(this,require('_process'))
-},{"_process":117,"async":11}]},{},[3])(3)
+},{"_process":117,"async":11}]},{},[164])(164)
 });

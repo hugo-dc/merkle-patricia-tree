@@ -11,7 +11,7 @@
     "prepublish": "npm run build",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/*.js",
-    "build": "browserify --s Trie index.js > ./dist/trie.js",
+    "build": "browserify --s Trie index.js > ./dist/trie.js && browserify --s SecureTrie secure.js > ./dist/secure.js",
     "build:docs": "documentation --github  -f md ./index.js ./secure.js > ./docs/index.md"
   },
   "author": {
