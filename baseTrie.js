@@ -275,14 +275,14 @@ Trie.prototype.findPath = function (targetKey, cb) {
 
     if (node.type === 'branch') {
       if (keyRemainder.length === 0) {
-        console.log('exhausted key without finding node...')
+        //console.log('exhausted key without finding node...')
         walkController.return(null, node, [], stack)
       // we exhausted the key without finding a node
       } else {
         var branchIndex = keyRemainder[0]
         //console.log('branchIndex:', branchIndex)
         var branchNode = node.getValue(branchIndex)
-        console.log('node.getValue returned branchNode:', branchNode)
+        //console.log('node.getValue returned branchNode:', branchNode)
         if (!branchNode) {
           // there are no more nodes to find and we didn't find the key
           console.log('no more nodes to find..')
@@ -294,20 +294,20 @@ Trie.prototype.findPath = function (targetKey, cb) {
         }
       }
     } else if (node.type === 'leaf') {
-      console.log('leaf node key:', keyProgress)
+      //console.log('leaf node key:', keyProgress)
       if (doKeysMatch(keyRemainder, nodeKey)) {
         // keys match, return node with empty key
-        console.log('keys match!')
+        //console.log('keys match!')
         walkController.return(null, node, [], stack)
       } else {
         // reached leaf but keys dont match
-        console.log('leaf keys dont match.')
+        //console.log('leaf keys dont match.')
         walkController.return(null, null, keyRemainder, stack)
       }
     } else if (node.type === 'extention') {
       if (matchingLen !== nodeKey.length) {
         // keys dont match, fail
-        console.log('extension keys dont match')
+        //console.log('extension keys dont match')
         walkController.return(null, null, keyRemainder, stack)
       } else {
         // keys match, continue search
@@ -337,7 +337,7 @@ Trie.prototype._findValueNodes = function (onFound, cb) {
     var node = options.childNode
     var nodeRef = options.childRef
     var key = options.childKey
-    console.log('findValueNodes walkTrie..')
+    //console.log('findValueNodes walkTrie..')
     var fullKey = key
 
     if (node.key) {
@@ -369,7 +369,7 @@ Trie.prototype._findDbNodes = function (onFound, cb) {
     var node = options.childNode
     var nodeRef = options.childRef
     var key = options.childKey
-    console.log('findDbNodes walkTrie..')
+    //console.log('findDbNodes walkTrie..')
     if (TrieNode.isRawNode(nodeRef)) {
       walkController.next()
     } else {
@@ -718,13 +718,13 @@ Trie.prototype._formatNode = function (node, topLevel, remove, opStack) {
     opStack = remove
     remove = false
   }
-  console.log('_formatNode node:', node)
+  //console.log('_formatNode node:', node)
 
   var rlpNode = node.serialize()
-  console.log('rlpNode:', rlpNode.toString('hex'))
+  //console.log('rlpNode:', rlpNode.toString('hex'))
   if (rlpNode.length >= 32 || topLevel) {
     var hashRoot = node.hash()
-    console.log('hashRoot:', ethUtil.toBuffer(hashRoot).toString('hex'))
+    //console.log('hashRoot:', ethUtil.toBuffer(hashRoot).toString('hex'))
 
     if (remove && this.isCheckpoint) {
       opStack.push({
